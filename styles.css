@@ -1,27 +1,40 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
+    font-family: "Montserrat", sans-serif;
+    background-color: #121212; /* Dark background */
+    color: #e0e0e0; /* Light text */
     margin: 20px;
 }
 
 .container {
     max-width: 500px;
     margin: 0 auto;
-    background-color: #fff;
+    background-color: #1e1e1e; /* Slightly lighter dark background for the card */
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Subtle dark shadow */
 }
 
-h1, h2 {
+.title {
+    font-size: 64px;
     text-align: center;
-    color: #004d99; /* PID Blue */
+    color: #ffffff; /* Light purple for headings (Dark mode highlight) */
+}
+
+/* Alert Info Style (Used for API Infotexts) */
+.alert-info {
+    background-color: #333; /* Darker background for alerts */
+    color: #ffcc00; /* Amber text for alerts */
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #ffcc00;
 }
 
 #departure-board {
     margin-top: 20px;
-    border-top: 1px solid #ddd;
+    border-top: 2px solid #828282; /* Darker border */
     padding-top: 10px;
 }
 
@@ -30,7 +43,7 @@ h1, h2 {
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #282828;
     font-size: 1.1em;
 }
 
@@ -54,11 +67,5 @@ h1, h2 {
 
 .time {
     font-weight: 600;
-    color: #007bff; /* Highlight the time/status */
+    color: #da2303; /* Teal/Cyan highlight for time/status (Dark mode highlight) */
 }
-
-/* Example styling for PID lines (Bus/Tram/Metro lines would need more specific classes) */
-/* Assuming 'line-NUMBER' structure based on typical API output */
-.line-22 { background-color: #dc3545; } /* Red for a popular Tram */
-.line-12 { background-color: #ffc107; color: #333; } /* Yellow/Orange */
-/* You would need to add more classes based on actual PID lines (Metro A/B/C, Tram/Bus colors) */

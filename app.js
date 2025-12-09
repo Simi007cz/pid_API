@@ -1,32 +1,42 @@
 // --- CONFIGURATION ---
-const API_KEY = 'YOUR_API_KEY_HERE'; // Replace with your actual Golemio API key
+const API_KEY = 'ADD_YOUR_API_KEY_HERE'; // Replace with your actual API key
 const BASE_URL = 'https://api.golemio.cz/v2/pid'; 
 const DEPARTURES_ENDPOINT = '/departureboards/';
 
 // The specific ID for the "Tyršův dům" stop
 const STOP_ID = 'U138Z2P'; 
 
-// --- HELPER FUNCTION ---
+// --- HELPER FUNCTION: DEPARTURE FORMATTING ---
 function formatDeparture(departure) {
     const line = departure.route.short_name;
     const destination = departure.trip.headsign;
     
-    // The Golemio API provides a predicted departure timestamp (in seconds)
-    const predictedTime = new Date(departure.departure_timestamp.predicted * 1000);
+    // Use ISO 8601 string directly to create Date object (correct for Golemio API)
+    const predictedTime = new Date(departure.departure_timestamp.predicted); 
     
-    // Calculate minutes until departure
     const now = new Date();
-    const minutesToDeparture = Math.floor((predictedTime.getTime() - now.getTime()) / 60000);
-
+    
+    // Calculate difference in milliseconds
+    const timeDifferenceMs = predictedTime.getTime() - now.getTime();
+    
+    // Calculate minutes (rounded down)
+    const minutesToDeparture = Math.floor(timeDifferenceMs / 60000);
+    
     // Get the formatted time string (e.g., "15:30")
     const formattedTime = predictedTime.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
 
     let status = '';
-    if (minutesToDeparture <= 1) {
-        status = '• NOW';
-    } else if (minutesToDeparture < 10) {
+    if (minutesToDeparture < 0) {
+        // Departure has already passed
+        status = 'DEPARTED';
+    } else if (minutesToDeparture < 1) {
+        // Less than 1 minute, display "<1 min" (as requested)
+        status = '<1 min';
+    } else if (minutesToDeparture <= 10) {
+        // Between 1 and 10 minutes
         status = `(${minutesToDeparture} min)`;
     } else {
+        // More than 10 minutes, display absolute time
         status = `${formattedTime}`;
     }
 
@@ -37,6 +47,24 @@ function formatDeparture(departure) {
             <span class="time">${status}</span>
         </div>
     `;
+}
+
+// --- HELPER FUNCTION: INFO TEXT DISPLAY (Retained from previous step) ---
+function displayInfoTexts(infotexts) {
+    const infoDiv = document.getElementById('info-texts');
+    if (!infoDiv || !infotexts || infotexts.length === 0) {
+        if (infoDiv) infoDiv.innerHTML = '';
+        return;
+    }
+
+    // Prioritize English text (text_en) if available, otherwise use Czech text (text)
+    const htmlContent = infotexts.map(info => {
+        const text = info.text_en || info.text;
+        if (!text) return '';
+        return `<p class="alert-info">${text}</p>`; 
+    }).join('');
+
+    infoDiv.innerHTML = htmlContent;
 }
 
 
@@ -56,7 +84,6 @@ async function getDepartures() {
         });
 
         if (!response.ok) {
-            // Check for common error codes (like 401 Unauthorized for bad API key)
             if (response.status === 401) {
                 throw new Error('Unauthorized. Please check your X-Access-Token.');
             }
@@ -65,6 +92,9 @@ async function getDepartures() {
 
         const data = await response.json();
         
+        // Handle Infotexts in the header
+        displayInfoTexts(data.infotexts);
+
         // Data contains an array of departure boards, grab the departures list
         const departures = data.departures || [];
         
@@ -83,5 +113,7 @@ async function getDepartures() {
         }
     }
 
-    // Execute the function once
-    getDepartures();
+// --- EXECUTION: Run every 5s ---
+// Execute the function once immediately, then set an interval for auto-refresh
+getDepartures();
+setInterval(getDepartures, 5000); // 5000 milliseconds = 5 seconds
